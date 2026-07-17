@@ -21,7 +21,8 @@ import {
   X,
   WifiOff
 } from "lucide-react";
-import { createInitialCase, facilities, indicationGroups, normalizeCase } from "./lib/caseModel";
+import { createInitialCase, facilities, indicationGroups as fallbackIndicationGroups, normalizeCase } from "./lib/caseModel";
+import { loadIndicationGroups } from "./lib/indicationCatalog";
 import { loadActiveDraft, saveActiveDraft } from "./lib/offlineStore";
 import { isSupabaseConfigured, photoUploadsEnabled } from "./lib/supabaseClient";
 import "./styles.css";
@@ -71,7 +72,7 @@ const demoSteps = [
   }
 ];
 
-function completeness(caseData) {
+function completeness(caseData, indicationCatalog) {
   const missing = [];
   if (!caseData.facility) missing.push("Facility");
   if (!caseData.ehrId) missing.push("Practice/EHR ID");
@@ -84,7 +85,7 @@ function completeness(caseData) {
 
   const dryOnly =
     caseData.indications.length > 0 &&
-    caseData.indications.every((item) => indicationGroups.find((group) => group.id === "dryEyeDrivers")?.options.includes(item));
+    caseData.indications.every((item) => indicationCatalog.find((group) => group.id === "dryEyeDrivers")?.options.includes(item));
   if (dryOnly) missing.push("Ocular surface indication beyond dry-eye driver");
 
   if (missing.length === 0) return { level: "green", label: "Strong documentation", missing };
@@ -123,6 +124,11 @@ function bestPracticeBullets(caseData, status) {
 
 function App() {
   const [caseData, setCaseData] = useState(() => createInitialCase());
+  const [indicationCatalog, setIndicationCatalog] = useState(fallbackIndicationGroups);
+  const [catalogStatus, setCatalogStatus] = useState({
+    source: "loading",
+    message: "Checking Supabase indication list."
+  });
   const [activeTab, setActiveTab] = useState("case");
   const [openGroup, setOpenGroup] = useState("keratitis");
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -134,8 +140,31 @@ function App() {
   const [draftReady, setDraftReady] = useState(false);
   const [offlineMessage, setOfflineMessage] = useState("Preparing encrypted draft storage.");
 
-  const status = useMemo(() => completeness(caseData), [caseData]);
+  const status = useMemo(() => completeness(caseData, indicationCatalog), [caseData, indicationCatalog]);
   const bullets = useMemo(() => bestPracticeBullets(caseData, status), [caseData, status]);
+
+  useEffect(() => {
+    let active = true;
+
+    loadIndicationGroups()
+      .then((result) => {
+        if (!active) return;
+        setIndicationCatalog(result.groups);
+        setCatalogStatus({ source: result.source, message: result.message });
+      })
+      .catch(() => {
+        if (!active) return;
+        setIndicationCatalog(fallbackIndicationGroups);
+        setCatalogStatus({
+          source: "fallback",
+          message: "Supabase unavailable; using local demo indication list."
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -316,6 +345,7 @@ function App() {
       <section className="install-strip">
         <WifiOff size={18} />
         <span>{offlineMessage} {isSupabaseConfigured ? "Supabase client configured." : "Supabase is not connected yet."}</span>
+        <span className={`data-source-pill ${catalogStatus.source}`}>{catalogStatus.message}</span>
         {installReady && <button className="text-button">Install</button>}
       </section>
 
@@ -385,7 +415,7 @@ function App() {
                 <p>Grouped for fast mobile use. Dry-eye drivers do not stand alone.</p>
               </div>
             </div>
-            {indicationGroups.map((group) => (
+            {indicationCatalog.map((group) => (
               <div className="accordion" key={group.id}>
                 <button onClick={() => setOpenGroup(openGroup === group.id ? "" : group.id)}>
                   {group.label}
