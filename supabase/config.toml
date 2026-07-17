@@ -1,0 +1,36 @@
+project_id = "nova-field-guide"
+
+[api]
+enabled = true
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:5177"
+additional_redirect_urls = ["http://localhost:5177"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+
+[storage]
+enabled = true
+file_size_limit = "20MiB"
+
+[functions.create-case]
+verify_jwt = true
+
+[functions.finalize-case]
+verify_jwt = true
+
+[functions.create-chart-summary]
+verify_jwt = true
+
+[functions.create-photo-upload-url]
+verify_jwt = true
+
+[functions.create-photo-view-url]
+verify_jwt = true
+
+[functions.submit-case-study-candidate]
+verify_jwt = true

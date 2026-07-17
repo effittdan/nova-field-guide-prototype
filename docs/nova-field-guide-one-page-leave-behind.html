@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nova Field Guide Partner Leave-Behind</title>
+    <style>
+      :root {
+        --primary: #233f7f;
+        --secondary: #5d8fc9;
+        --neutral: #eef4fa;
+        --surface: #ffffff;
+        --surface-muted: #e6e9ee;
+        --text: #252a31;
+        --muted: #6c747d;
+        --clinical-soft: #dce7ea;
+        --border: #d5dce6;
+        --green: #2e7d50;
+        --yellow: #9a6b00;
+        --red: #b42318;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--neutral);
+        color: var(--text);
+        font-family: "Avenir Next", Inter, system-ui, sans-serif;
+        line-height: 1.45;
+      }
+
+      .page {
+        width: min(8.5in, 100%);
+        min-height: 11in;
+        margin: 0 auto;
+        background: var(--surface);
+        padding: 0.32in 0.44in;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: 1.35fr 0.65fr;
+        gap: 18px;
+        align-items: end;
+        border-bottom: 2px solid var(--primary);
+        padding-bottom: 12px;
+      }
+
+      .eyebrow {
+        margin: 0 0 8px;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        color: var(--primary);
+        font-size: 29px;
+        line-height: 1.08;
+      }
+
+      h2 {
+        color: var(--primary);
+        font-size: 15px;
+        line-height: 1.25;
+        margin-bottom: 6px;
+      }
+
+      h3 {
+        color: var(--text);
+        font-size: 12.5px;
+        margin-bottom: 3px;
+      }
+
+      .summary {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .prototype-pill {
+        justify-self: end;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 8px 12px;
+        color: var(--primary);
+        font-size: 11px;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .hero-grid,
+      .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+
+      .hero-grid {
+        margin-top: 12px;
+      }
+
+      .content-grid {
+        margin-top: 10px;
+      }
+
+      .callout {
+        border-radius: 14px;
+        background: var(--clinical-soft);
+        padding: 12px;
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 11px 12px;
+      }
+
+      .dark-card {
+        background: var(--primary);
+        color: var(--surface);
+      }
+
+      .dark-card h2,
+      .dark-card p {
+        color: var(--surface);
+      }
+
+      ul,
+      ol {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      li {
+        margin: 3px 0;
+        font-size: 11.5px;
+      }
+
+      .steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .step {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 10px;
+        min-height: 84px;
+      }
+
+      .step span {
+        display: inline-grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 999px;
+        background: var(--primary);
+        color: var(--surface);
+        font-size: 12px;
+        font-weight: 800;
+        margin-bottom: 5px;
+      }
+
+      .status-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-top: 7px;
+      }
+
+      .status {
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        padding: 6px 8px;
+        font-size: 10.5px;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .status.green {
+        color: var(--green);
+      }
+
+      .status.yellow {
+        color: var(--yellow);
+      }
+
+      .status.red {
+        color: var(--red);
+      }
+
+      .footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 10px;
+      }
+
+      @media print {
+        body {
+          background: var(--surface);
+        }
+
+        .page {
+          width: 8.5in;
+          min-height: 11in;
+          padding: 0.32in 0.44in;
+        }
+
+        @page {
+          size: letter;
+          margin: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <div>
+          <p class="eyebrow">Nova Field Guide</p>
+          <h1>Mobile documentation support for appropriate-use discipline</h1>
+        </div>
+        <div class="prototype-pill">Partner demo prototype</div>
+      </header>
+
+      <section class="hero-grid">
+        <div class="callout">
+          <h2>What it is</h2>
+          <p class="summary">
+            A phone-friendly field workflow designed to help qualified healthcare professionals document ocular surface findings, prior measures, treatment rationale, photos, notes, and follow-up discipline in nursing home and assisted living environments.
+          </p>
+        </div>
+        <div class="card dark-card">
+          <h2>Good medicine first</h2>
+          <p class="summary">
+            The product idea is not to accelerate every case. It is to support better case selection habits, more complete documentation, and clearer follow-up visibility.
+          </p>
+        </div>
+      </section>
+
+      <section class="steps" aria-label="Demo flow">
+        <div class="step">
+          <span>1</span>
+          <h3>Scan treatment card</h3>
+          <p class="summary">QR opens the PWA and can suggest phone install for first-time users.</p>
+        </div>
+        <div class="step">
+          <span>2</span>
+          <h3>Start field case</h3>
+          <p class="summary">Use facility and practice/EHR ID by default, not patient name.</p>
+        </div>
+        <div class="step">
+          <span>3</span>
+          <h3>Check indications</h3>
+          <p class="summary">Grouped indication prompts keep dry-eye drivers separate from the ocular surface indication.</p>
+        </div>
+        <div class="step">
+          <span>4</span>
+          <h3>Capture support</h3>
+          <p class="summary">Photo capture/import and native dictation support mobile workflows.</p>
+        </div>
+        <div class="step">
+          <span>5</span>
+          <h3>See missing pieces</h3>
+          <p class="summary">Green/yellow/red status prompts documentation completeness without replacing judgment.</p>
+        </div>
+        <div class="step">
+          <span>6</span>
+          <h3>Review facility patterns</h3>
+          <p class="summary">Management can see chart completion, follow-up gaps, and documentation patterns.</p>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="card">
+          <h2>Designed to support</h2>
+          <ul>
+            <li>Appropriate-use thinking before Nova application</li>
+            <li>Objective ocular surface documentation</li>
+            <li>Prior measures and driver management</li>
+            <li>Pre-treatment photo capture or image import</li>
+            <li>Voice or text clinical notes</li>
+            <li>Follow-up reminders for mobile care settings</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Documentation status</h2>
+          <p class="summary">Status is a completeness cue, not an approval system.</p>
+          <div class="status-row">
+            <div class="status green">Strong</div>
+            <div class="status yellow">Needs detail</div>
+            <div class="status red">Use caution</div>
+          </div>
+          <ul>
+            <li>Clinician can proceed with acknowledgement</li>
+            <li>Missing photos, rationale, or follow-up stay visible</li>
+            <li>Facility-level oversight supports quality review</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="card">
+          <h2>Partner feedback needed</h2>
+          <ul>
+            <li>Which fields must match your EHR?</li>
+            <li>Copyable chart note, PDF, or both?</li>
+            <li>How often can follow-up photos realistically happen?</li>
+            <li>Who approves case-study sharing?</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2>Prototype boundaries</h2>
+          <ul>
+            <li>Not production HIPAA infrastructure</li>
+            <li>Not billing or coding advice</li>
+            <li>Not a diagnostic image tool</li>
+            <li>Not a treatment approval engine</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="footer">
+        <p>
+          Nova is designed for ocular surface use by qualified healthcare professionals when clinically appropriate. Clinicians should follow the product IFU, payer policies, documentation requirements, and their own medical judgment.
+        </p>
+        <p>
+          Prototype prepared for partner discussion. AmniOptix branding can remain quiet while the managing medical group and facility workflow stay front and center.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

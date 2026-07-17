@@ -1,0 +1,9 @@
+{
+  "name": "Nova Field Guide",
+  "short_name": "Nova Guide",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EEF4FA",
+  "theme_color": "#233F7F",
+  "description": "Mobile field documentation prototype for clinician-directed Nova case review."
+}
