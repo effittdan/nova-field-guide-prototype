@@ -50,6 +50,32 @@ button {
   padding: 24px 0 16px;
 }
 
+.topbar > div:first-child {
+  min-width: 0;
+}
+
+.topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.brand-logo {
+  display: block;
+  width: clamp(132px, 24vw, 188px);
+  height: auto;
+}
+
+.app-kicker {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: var(--primary);
@@ -797,6 +823,10 @@ footer {
 
   .topbar {
     display: grid;
+  }
+
+  .brand-logo {
+    width: 148px;
   }
 
   .status-dot {

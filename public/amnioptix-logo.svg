@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="AO_Logo" data-name="AO Logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1141.19 309.59">
+  <defs>
+    <style>
+      .cls-1 {
+        font-family: Ubuntu-Bold, Ubuntu;
+        font-weight: 700;
+      }
+
+      .cls-2 {
+        font-family: Ubuntu-Light, Ubuntu;
+        font-weight: 300;
+      }
+
+      .cls-3 {
+        fill: #233f7f;
+        font-size: 290.01px;
+        letter-spacing: -.07em;
+      }
+    </style>
+  </defs>
+  <g id="AO_Logo_w_tag" data-name="AO Logo w tag">
+    <text class="cls-3" transform="translate(0 245.5)"><tspan class="cls-1" x="0" y="0">a</tspan><tspan class="cls-2" x="138.62" y="0">mni</tspan><tspan class="cls-1" x="557.4" y="0">o</tspan><tspan class="cls-2" x="711.69" y="0">ptix</tspan></text>
+  </g>
+</svg>
