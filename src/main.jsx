@@ -21,7 +21,7 @@ import {
   X,
   WifiOff
 } from "lucide-react";
-import { getCurrentSession, sendMagicLink, signOut, submitOnboardingRequest, subscribeToAuthChanges } from "./lib/authModel";
+import { getCurrentSession, sendMagicLink, signInWithPassword, signOut, submitOnboardingRequest, subscribeToAuthChanges } from "./lib/authModel";
 import { createInitialCase, facilities, indicationGroups as fallbackIndicationGroups, normalizeCase } from "./lib/caseModel";
 import { loadIndicationGroups } from "./lib/indicationCatalog";
 import { loadActiveDraft, saveActiveDraft } from "./lib/offlineStore";
@@ -128,6 +128,7 @@ function App() {
   const [caseData, setCaseData] = useState(() => createInitialCase());
   const [authSession, setAuthSession] = useState(null);
   const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
   const [authMessage, setAuthMessage] = useState("Sign in to load practice setup.");
   const [showSetupRequest, setShowSetupRequest] = useState(false);
   const [setupMessage, setSetupMessage] = useState("");
@@ -294,6 +295,17 @@ function App() {
       setAuthMessage("Check email for a secure sign-in link.");
     } catch (error) {
       setAuthMessage(error.message || "Sign-in link could not be sent.");
+    }
+  };
+
+  const requestPasswordSignIn = async () => {
+    setAuthMessage("Signing in.");
+    try {
+      await signInWithPassword(authEmail, authPassword);
+      setAuthPassword("");
+      setAuthMessage("Signed in.");
+    } catch (error) {
+      setAuthMessage(error.message || "Password sign-in failed.");
     }
   };
 
@@ -487,7 +499,15 @@ function App() {
               placeholder="clinician@example.com"
               aria-label="Email address"
             />
-            <button className="primary" onClick={requestMagicLink} disabled={!isSupabaseConfigured || !authEmail}>Send secure link</button>
+            <input
+              type="password"
+              value={authPassword}
+              onChange={(event) => setAuthPassword(event.target.value)}
+              placeholder="Password"
+              aria-label="Password"
+            />
+            <button className="primary" onClick={requestPasswordSignIn} disabled={!isSupabaseConfigured || !authEmail || !authPassword}>Sign in</button>
+            <button className="secondary" onClick={requestMagicLink} disabled={!isSupabaseConfigured || !authEmail}>Email link</button>
           </div>
         )}
         <button className="text-button setup-toggle" onClick={() => setShowSetupRequest((current) => !current)}>
