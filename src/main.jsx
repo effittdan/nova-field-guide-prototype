@@ -21,9 +21,11 @@ import {
   X,
   WifiOff
 } from "lucide-react";
+import { getCurrentSession, sendMagicLink, signOut, submitOnboardingRequest, subscribeToAuthChanges } from "./lib/authModel";
 import { createInitialCase, facilities, indicationGroups as fallbackIndicationGroups, normalizeCase } from "./lib/caseModel";
 import { loadIndicationGroups } from "./lib/indicationCatalog";
 import { loadActiveDraft, saveActiveDraft } from "./lib/offlineStore";
+import { demoPracticeContext, loadPracticeContext } from "./lib/practiceContext";
 import { isSupabaseConfigured, photoUploadsEnabled } from "./lib/supabaseClient";
 import "./styles.css";
 
@@ -124,6 +126,22 @@ function bestPracticeBullets(caseData, status) {
 
 function App() {
   const [caseData, setCaseData] = useState(() => createInitialCase());
+  const [authSession, setAuthSession] = useState(null);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authMessage, setAuthMessage] = useState("Sign in to load practice setup.");
+  const [showSetupRequest, setShowSetupRequest] = useState(false);
+  const [setupMessage, setSetupMessage] = useState("");
+  const [setupRequest, setSetupRequest] = useState({
+    clinicianName: "",
+    email: "",
+    phone: "",
+    practiceName: "",
+    ehrSystem: "",
+    ehrIdentifierLabel: "Practice/EHR ID",
+    facilityNames: "",
+    notes: ""
+  });
+  const [practiceContext, setPracticeContext] = useState(demoPracticeContext);
   const [indicationCatalog, setIndicationCatalog] = useState(fallbackIndicationGroups);
   const [catalogStatus, setCatalogStatus] = useState({
     source: "loading",
@@ -142,6 +160,60 @@ function App() {
 
   const status = useMemo(() => completeness(caseData, indicationCatalog), [caseData, indicationCatalog]);
   const bullets = useMemo(() => bestPracticeBullets(caseData, status), [caseData, status]);
+  const activeFacilities = practiceContext.facilities.length ? practiceContext.facilities : facilities.map((name) => ({ id: name, name }));
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setAuthMessage("Supabase is not configured; using demo access.");
+      return undefined;
+    }
+
+    getCurrentSession()
+      .then((session) => {
+        setAuthSession(session);
+        setAuthEmail(session?.user?.email || "");
+        setAuthMessage(session ? "Signed in." : "Sign in to load practice setup.");
+      })
+      .catch(() => setAuthMessage("Could not read the current Supabase session."));
+
+    return subscribeToAuthChanges((session) => {
+      setAuthSession(session);
+      setAuthEmail(session?.user?.email || "");
+      setAuthMessage(session ? "Signed in." : "Sign in to load practice setup.");
+    });
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    loadPracticeContext(authSession)
+      .then((context) => {
+        if (!active) return;
+        setPracticeContext(context);
+        if (context.source === "supabase") {
+          setCaseData((current) => ({
+            ...current,
+            organizationId: context.organizationId,
+            practiceName: context.practiceName,
+            facility: context.facilities[0]?.name || "",
+            syncStatus: current.synced ? current.syncStatus : "pending_sync",
+            synced: false
+          }));
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setPracticeContext({
+          ...demoPracticeContext,
+          source: "fallback",
+          message: "Practice setup could not load; using local demo context."
+        });
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [authSession]);
 
   useEffect(() => {
     let active = true;
@@ -211,6 +283,47 @@ function App() {
 
   const update = (key, value) =>
     setCaseData((current) => ({ ...current, [key]: value, syncStatus: "pending_sync", synced: false }));
+
+  const updateSetupRequest = (key, value) =>
+    setSetupRequest((current) => ({ ...current, [key]: value }));
+
+  const requestMagicLink = async () => {
+    setAuthMessage("Sending secure sign-in link.");
+    try {
+      await sendMagicLink(authEmail);
+      setAuthMessage("Check email for a secure sign-in link.");
+    } catch (error) {
+      setAuthMessage(error.message || "Sign-in link could not be sent.");
+    }
+  };
+
+  const submitSetupRequest = async (event) => {
+    event.preventDefault();
+    setSetupMessage("Submitting setup request.");
+    try {
+      await submitOnboardingRequest(
+        {
+          ...setupRequest,
+          email: setupRequest.email || authEmail
+        },
+        authSession?.user?.id
+      );
+      setSetupMessage("Setup request submitted for AmniOptix admin review.");
+      setShowSetupRequest(false);
+      setSetupRequest({
+        clinicianName: "",
+        email: authEmail,
+        phone: "",
+        practiceName: "",
+        ehrSystem: "",
+        ehrIdentifierLabel: "Practice/EHR ID",
+        facilityNames: "",
+        notes: ""
+      });
+    } catch (error) {
+      setSetupMessage(error.message || "Setup request could not be submitted.");
+    }
+  };
 
   const toggleIndication = (value) => {
     setCaseData((current) => {
@@ -351,6 +464,91 @@ function App() {
         {installReady && <button className="text-button">Install</button>}
       </section>
 
+      <section className="access-panel">
+        <div>
+          <span className={`data-source-pill ${practiceContext.source}`}>{practiceContext.message}</span>
+          <h2>Practice Access</h2>
+          <p>{authMessage}</p>
+        </div>
+        {authSession ? (
+          <div className="access-actions">
+            <span>{authSession.user.email}</span>
+            <button className="secondary" onClick={signOut}>Sign out</button>
+          </div>
+        ) : (
+          <div className="access-actions">
+            <input
+              type="email"
+              value={authEmail}
+              onChange={(event) => {
+                setAuthEmail(event.target.value);
+                updateSetupRequest("email", event.target.value);
+              }}
+              placeholder="clinician@example.com"
+              aria-label="Email address"
+            />
+            <button className="primary" onClick={requestMagicLink} disabled={!isSupabaseConfigured || !authEmail}>Send secure link</button>
+          </div>
+        )}
+        <button className="text-button setup-toggle" onClick={() => setShowSetupRequest((current) => !current)}>
+          {showSetupRequest ? "Close setup request" : "First-time clinician setup"}
+        </button>
+      </section>
+
+      {showSetupRequest && (
+        <form className="setup-panel" onSubmit={submitSetupRequest}>
+          <div className="section-heading">
+            <Building2 size={20} />
+            <div>
+              <h2>Clinician Setup Request</h2>
+              <p>Submitted details go to AmniOptix admin review before access is granted.</p>
+            </div>
+          </div>
+          <div className="field-row">
+            <label>
+              Clinician name
+              <input required value={setupRequest.clinicianName} onChange={(event) => updateSetupRequest("clinicianName", event.target.value)} />
+            </label>
+            <label>
+              Email
+              <input required type="email" value={setupRequest.email || authEmail} onChange={(event) => updateSetupRequest("email", event.target.value)} />
+            </label>
+          </div>
+          <div className="field-row">
+            <label>
+              Managing medical group
+              <input value={setupRequest.practiceName} onChange={(event) => updateSetupRequest("practiceName", event.target.value)} />
+            </label>
+            <label>
+              Phone
+              <input value={setupRequest.phone} onChange={(event) => updateSetupRequest("phone", event.target.value)} />
+            </label>
+          </div>
+          <div className="field-row">
+            <label>
+              EHR system
+              <input value={setupRequest.ehrSystem} onChange={(event) => updateSetupRequest("ehrSystem", event.target.value)} />
+            </label>
+            <label>
+              ID label
+              <input value={setupRequest.ehrIdentifierLabel} onChange={(event) => updateSetupRequest("ehrIdentifierLabel", event.target.value)} />
+            </label>
+          </div>
+          <label>
+            Facilities
+            <textarea value={setupRequest.facilityNames} onChange={(event) => updateSetupRequest("facilityNames", event.target.value)} placeholder="One facility per line or comma-separated" />
+          </label>
+          <label>
+            Notes for AmniOptix admin
+            <textarea value={setupRequest.notes} onChange={(event) => updateSetupRequest("notes", event.target.value)} />
+          </label>
+          <div className="action-row">
+            <button className="primary" type="submit" disabled={!isSupabaseConfigured}>Submit setup request</button>
+            {setupMessage && <p className="muted">{setupMessage}</p>}
+          </div>
+        </form>
+      )}
+
       <section className="demo-rail" aria-label="Partner demo actions">
         <div className="demo-card">
           <QrCode size={24} />
@@ -390,7 +588,7 @@ function App() {
             <label>
               Facility
               <select value={caseData.facility} onChange={(event) => update("facility", event.target.value)}>
-                {facilities.map((facility) => <option key={facility}>{facility}</option>)}
+                {activeFacilities.map((facility) => <option key={facility.id || facility.name}>{facility.name}</option>)}
               </select>
             </label>
             <div className="field-row">
@@ -584,7 +782,7 @@ function App() {
           </div>
           <div className="panel">
             <h2>Partner Branding</h2>
-            <p className="muted">Prototype uses one reusable app with configurable medical group name, facility directory, and restrained AmniOptix support attribution.</p>
+            <p className="muted">Prototype uses an AmniOptix-branded app shell with configurable medical group, facility directory, and EHR context loaded after clinician assignment.</p>
             <button className="secondary"><Settings size={18} /> Configure group</button>
           </div>
         </section>
