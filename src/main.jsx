@@ -335,10 +335,9 @@ function App() {
       <header className="topbar">
         <div>
           <div className="topbar-brand" aria-label="AmniOptix Nova Field Guide">
+            <span className="app-kicker">Nova Mobile Field Guide</span>
             <img src="/amnioptix-logo.svg" alt="AmniOptix" className="brand-logo" />
-            <span className="app-kicker">Nova Field Guide</span>
           </div>
-          <h1>{caseData.practiceName}</h1>
         </div>
         <button className={`status-dot ${status.level}`} onClick={() => setShowSuggestions(true)} aria-label="Open documentation suggestions">
           <span>{status.label}</span>
